@@ -1,5 +1,6 @@
 //https://youtu.be/HvDqbzu0i0E
 //https://observablehq.com/@mbostock/quadtree-art
+//https://sighack.com/post/averaging-rgb-colors-the-right-way
 
 class Histogram{
 	constructor(blob){
@@ -21,19 +22,34 @@ class Histogram{
 		this.area_exponent = 0.25
 		this.area_error = Math.pow(blob.width*blob.height, this.area_exponent);
 
+
+	}
+	rgb(){
+		return [this.R, this.G, this.B];
+	}
+	avg(){
+		let r,g,b,a,t;
+		r = g = b = a = t = 0;
+		for(let i=0,v=0;i<this.px.length;i+=4){
+			r += Math.pow(this.px[i + 0], 2); //red
+			g += Math.pow(this.px[i + 1], 2); //green
+			b += Math.pow(this.px[i + 2], 2); //blue
+			// a = Math.pow(this.px[i + 3], 2); //alpha
+			t++ //total;
+		}
+		return [Math.sqrt(r/t),Math.sqrt(g/t),Math.sqrt(b/t)];
+	}
+	build(){
 		//histogram
 		for(let i=0,v=0;i<this.px.length;i+=4){
 			this.R[ this.px[i + 0] ]++; //red
 			this.G[ this.px[i + 1] ]++; //green
 			this.B[ this.px[i + 2] ]++; //blue
 			// this.A[ this.px[i + 3] ]++; //alpha
-		}
+		}		
 	}
-	rgb(){
-		return [this.R, this.G, this.B];
-	}
-	avg(){
-		
+	weightedAvg(){
+
 		for(let i=0;i < 256;i++){
 			this.totalR += this.R[i];
 			this.totalG += this.G[i];
@@ -45,18 +61,15 @@ class Histogram{
 		}
 		
 		//True mean
-		this.meanR = this.totalR / this.R.length;
-		this.meanG = this.totalG / this.G.length;
-		this.meanB = this.totalB / this.B.length;
+		this.meanR = this.totalR / 255;
+		this.meanG = this.totalG / 255;
+		this.meanB = this.totalB / 255;
 		
-		// //what is this?
-		this.valueR /= totalR;
-		this.valueG /= totalG;
-		this.valueB /= totalB;
-				
-	}
-	weightedAvg(){
-
+		// //what is this? weighted mean?
+		this.valueR /= this.totalR;
+		this.valueG /= this.totalG;
+		this.valueB /= this.totalB;
+		
 	// weightedAvg
 		for(let i=0;i < 256;i++){
 			this.varianceR += sq( avg.valueR - i ) * this.R[i];
@@ -79,10 +92,3 @@ class Histogram{
 						this.error ]; 
 	}
 }
-
-
-
-
-
-
-
